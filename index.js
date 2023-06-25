@@ -1,12 +1,11 @@
 var who;  
 var turn; 
-var end=false;
+var end=false;   //end game after player win | not to allow bot to mark
 var player1 = [];
 var bot1 = [];
    
 //winning condition
 const win = [[1,2,3],[4,5,6],[7,8,9],[1,4,7],[2,5,8],[3,6,9],[1,5,9],[3,5,7]];
-var possibleWin = [[1,2,3],[4,5,6],[7,8,9],[1,4,7],[2,5,8],[3,6,9],[1,5,9],[3,5,7]];
 var allElement = [1,2,3,4,5,6,7,8,9];
 
 //event listener for 9 box
@@ -37,67 +36,36 @@ function botPlay(){
 
     switch(player1.length){
         case 1:
+            //check if 5th loction is free to occupy else random number
             elementIndex = (player1[0]!==5)? 5: allElement[ Math.floor(Math.random() * allElement.length)];
             break;
+            
         case 2:
-            let winRow;
+            let nextMove2 = findNextMoveToWin(player1,bot1);  // this function find the next move to win player
+            elementIndex = (nextMove2 === null)? allElement[ Math.floor(Math.random() * allElement.length)]   :  nextMove2;
+            break;
 
-            win.forEach((winn)=>{
-               if(winn.includes(player1[0]) && winn.includes(player1[1])){
-                   winRow=winn;
-                   possibleWin = possibleWin.filter((el)=> (el[0]&&el[1]&&el[2])!==(winRow[0]&&winRow[1]&&winRow[2]));
-                //    console.log(possibleWin);
-                  
-               } 
-            })
-            try{
-                let botCaseTwo = Number(winRow.filter((el) => player1.indexOf(el) == -1));
-                elementIndex = (allElement.includes(botCaseTwo))? botCaseTwo : allElement[ Math.floor(Math.random() * allElement.length)];
-                
-            }catch(err){
-                elementIndex =allElement[ Math.floor(Math.random() * allElement.length)];
+        default:
+            let nextMoveToWinBot = findNextMoveToWin(bot1,player1);     // this function find the next move towin bot
+            let nextMoveToNotWinPlayer = findNextMoveToWin(player1,bot1);   // this function find the next move to win player
+            elementIndex = (nextMoveToWinBot===null)? nextMoveToNotWinPlayer : nextMoveToWinBot;
+            if((nextMoveToNotWinPlayer === null) && (nextMoveToWinBot === null)){       //if both values are null then random number
+                elementIndex = allElement[ Math.floor(Math.random() * allElement.length)];
             }
-            break;
-        case 3:
-            let winRowforBot;
-            possibleWin.forEach((winn)=>{
-                if(winn.includes(bot1[0]) && winn.includes(bot1[1])){
-                    winRowforBot = winn;
-                }
-            })
-            try{
-                let botCaseThree = Number(winRowforBot.filter((el) => bot1.indexOf(el) == -1));
-                elementIndex = (allElement.includes(botCaseThree))? botCaseThree : allElement[ Math.floor(Math.random() * allElement.length)];
-            }catch(err){
-                elementIndex =allElement[ Math.floor(Math.random() * allElement.length)];
-            }
-            break;
-        case 4:
-            elementIndex =allElement[ Math.floor(Math.random() * allElement.length)];
-            break;
-        
     }
-     getElementById = document.getElementById(`a${elementIndex}`)
-
-
+     getElementById = document.getElementById(`a${elementIndex}`)           // find the location 
     add(getElementById,elementIndex,turn)
 }
 
 //function for Draw
-function draw(whos){
-    document.querySelector(".banner").classList.remove("hidden");
+function winOrDraw(whos){
+    document.querySelector(".banner").classList.remove("hidden");           // remove hidden to visible the restart button
     document.querySelector(".banner h2").textContent =(whos)? whos: "Draw!";
-}
-
-//function for win
-function gameWin(whos){
-    document.querySelector(".banner").classList.remove("hidden");
-    document.querySelector(".banner h2").textContent = whos+" win!";
 }
 
 //main function game play
 function playGame(){
-    document.querySelector(".center").classList.remove("hidden");
+    document.querySelector(".center").classList.remove("hidden");           
      document.querySelector(".banner").classList.add("hidden");
        location.reload();
 }
@@ -111,13 +79,11 @@ function player(){
 
         if(add(getElementById,elementIndex,turn)){
             turn=false;
-            botPlay();
+            (!(end) && botPlay())
         }else{
             turn=false;
             alert("Select the Valid Cell!")
         }
-     
-        
         }) 
 }
 
@@ -134,15 +100,15 @@ function add(id,eIndex,turn){
 function markxo(id,eIndex,turn){
     allElement=allElement.filter(item => item !== eIndex);
 
-    if(allElement.length === 0){
-        return draw();
-     }
     if(turn){
         player1.push(eIndex);
         id.textContent = who;
         if(player1.length>=3){
             if(check(player1)){
-               draw("Player Win!");
+                end = true;
+               return winOrDraw("Player Win!");
+            }else if(allElement.length === 0){
+                return winOrDraw();
             }
         }
      
@@ -151,31 +117,43 @@ function markxo(id,eIndex,turn){
         id.textContent = (who==="X")?"O":"X";
         if(bot1.length>=3){
             if(check(bot1)){
-                draw("Computer Win!");
+                return winOrDraw("Computer Win!");
+            }else if(allElement.length === 0){
+                return winOrDraw();
             }
         }
     }
-   
     (id.textContent==="O")?id.classList.add("color"):id.classList.remove("color");
-        
 }
 
 
-//function to check the winning conditions
+// //check the winning condition
 function check(p){
-      for(let i = 0;i<win.length; i++){
-        a=win[i];
-        b=p;
-        if(a.every((val)=>b.includes(val))){
-            return true;
-        }
+  for(let i = 0;i<win.length; i++){
+    a=win[i];
+    b=p;
+    if(a.every((val)=>b.includes(val))){
+        return true;
     }
 }
+}
 
 
 
-
-
+// this function to find the next move to win
+function findNextMoveToWin(player, opponent) {
+    for (let condition of win) {
+        let playerPositions = player.filter(position => condition.includes(position));
+        let opponentPositions = opponent.filter(position => condition.includes(position));
+        if (playerPositions.length === 2 && opponentPositions.length === 0) {
+        let missingPosition = condition.find(position => !player.includes(position) && !opponent.includes(position));
+        if (missingPosition !== undefined) {
+            return missingPosition;
+        }
+        }
+    }
+    return null; // No potential winning move found
+    }
 
 
 
