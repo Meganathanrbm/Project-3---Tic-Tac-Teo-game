@@ -10,6 +10,7 @@ var allElement = [1,2,3,4,5,6,7,8,9];
 
 //event listener for 9 box
 document.querySelectorAll(".select").forEach((item)=>{
+    document.querySelector(".alert").style.opacity=0;
     item.addEventListener('click',selected);
 })
 
@@ -82,7 +83,10 @@ function player(){
             (!(end) && botPlay())
         }else{
             turn=false;
-            alert("Select the Valid Cell!")
+            document.querySelector(".alert").style.opacity=1;
+            setTimeout(() => {
+                document.querySelector(".alert").style.opacity=0;
+            }, 2500);
         }
         }) 
 }

@@ -262,3 +262,38 @@ body{
     50% {opacity: 1;}
     to {-webkit-transform: translateY(350px);}
 }
+
+
+
+/* Alert  */
+.alertBg{
+    width: 80%;
+    padding: 10px;
+    position: relative;
+    margin: auto;
+}
+.alert {
+    padding: 20px;
+    background-color: #ff9800;
+    color: white;
+    width: 90%;
+    position: absolute;
+    border-radius: 10px;
+    bottom: 0;
+    opacity: 0;
+  }
+  
+  .closebtn {
+  
+    color: white;
+    font-weight: bold;
+    float: right;
+    font-size: 22px;
+    line-height: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  
+  .closebtn:hover {
+    color: black;
+  }
